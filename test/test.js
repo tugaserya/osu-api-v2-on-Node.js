@@ -18,7 +18,7 @@ function token_req() {//this function is using for the request an the auth token
         "Content-Type": "application/x-www-form-urlencoded",
     };
 
-    let body = "client_id=Your_client_id&client_secret=Your_client_secret&grant_type=client_credentials&scope=public";
+    let body = "client_id=Your_client_id&client_secret=Your_client_secret&grant_type=client_credentials&scope=public";//paste here your client id and client secret
 
     function token_return(url) {//writing the auth token
         return fetch(url, {
