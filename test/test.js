@@ -1,5 +1,4 @@
-const fs = require('fs');//import for the auth token using
-const prompt = require('prompt-sync')();
+const fs = require('fs');//import for the auth token using from tokenData.json
 const readline = require('readline');
 const rl = readline.createInterface({
     input: process.stdin,
@@ -17,10 +16,11 @@ function token_req() {//this function is using for the request an the auth token
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     };
+    //here you should replace "your_client_id" and "your_client_secret".
+    //You can take it from your accaunt settings after registration of your app.
+    let body = "client_id=your_client_id&client_secret=your_client_secret&grant_type=client_credentials&scope=public";
 
-    let body = "client_id=25005&client_secret=06rbUkau5uqMJIOoPCmn1NUcuU5QEIrFBnyZLxV5&grant_type=client_credentials&scope=public";
-
-    function token_return(url) {//writing the auth token
+    function token_return(url) {//writing the auth token into tokenData.json
         return fetch(url, {
             method: "POST",
             headers,
@@ -31,7 +31,7 @@ function token_req() {//this function is using for the request an the auth token
         });
     }
 
-    return token_return(url)//reading the auth token
+    return token_return(url)//reading the auth token from tokenData.json
         .then(() => {
             let rawdata = fs.readFileSync('./tokenData.json');
             let tokendata = JSON.parse(rawdata);
@@ -41,27 +41,24 @@ function token_req() {//this function is using for the request an the auth token
 
 
 
-
-
-
 //------------------------------------------------------------------------------
 
-rl.question('Type a username:', (name) => {//user can type a username for reqyesting data
-    user_data(name)
-    rl.close();
-
+rl.question('Type a username: ', (name) => {//user can type a username and mode(osu, mania, taiko, Catch the beat) for requesting data
+    rl.question('Type a mode of game: ', (mode) => {
+            user_data(name,mode);
+        rl.close();})
   });
 
-function user_data(user){
-const urlendpoint = new URL(`https://osu.ppy.sh/api/v2/users/${user}/osu`);//url with params for the data request
+function user_data(user,mode){
+const urlendpoint = new URL(`https://osu.ppy.sh/api/v2/users/${user}/${mode}`);//url with params for the data request
 const params = {
     "key": "non",
 };
 
 Object.keys(params)
-    .forEach(key => urlendpoint.searchParams.append(key, params[key]));//forms of urlendpoint
+    .forEach(key => urlendpoint.searchParams.append(key, params[key]));//formation of urlendpoint
 
-token_req()//use the previus function for taking the auth token
+token_req()//use the token_req() function for taking the auth token
     .then(token => {
         const headers = {
         "Content-Type": "application/json",
@@ -75,12 +72,13 @@ fetch(urlendpoint, {//request of data through API v2
 })
 .then(response => response.json())
 .then(data => {
-    console.log("country: " + data["country_code"]);
+    console.log("country: " + data["country"]["name"]);
     console.log("rank: " + data["rank_highest"]["rank"]);
     console.log("discord(if there): "+ data["discord"]);
+    console.log("pp count: "+ data["statistics"]["pp"]);
 });
 })
 .catch(error => {
-     console.error("Error:", error);
+     console.error("Error: ", error);
 });
 }
